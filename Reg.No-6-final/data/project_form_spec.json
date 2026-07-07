@@ -1,0 +1,634 @@
+{
+  "project_form": {
+    "title": "Add New Project",
+    "description": "Create a new project in Grid SW Project Portfolio",
+    "sections": [
+      {
+        "section_id": "basic_info",
+        "title": "Basic Information",
+        "fields": [
+          {
+            "field_id": "project_name",
+            "label": "Project Name",
+            "type": "text",
+            "required": true,
+            "order": 3,
+            "validation": {
+              "type": "required",
+              "min_length": 1,
+              "max_length": 255,
+              "error_message": "Project Name is required and must be between 1 and 255 characters"
+            }
+          },
+          {
+            "field_id": "initiative_name",
+            "label": "Initiative Name",
+            "type": "text",
+            "required": true,
+            "order": 2,
+            "validation": {
+              "type": "required",
+              "min_length": 1,
+              "max_length": 255,
+              "error_message": "Initiative Name is required and must be between 1 and 255 characters"
+            }
+          },
+          {
+            "field_id": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": true,
+            "order": 4,
+            "validation": {
+              "type": "required",
+              "max_length": 2000,
+              "error_message": "Description must not exceed 2000 characters"
+            }
+          }
+        ]
+      },
+      {
+        "section_id": "scheduling",
+        "title": "Scheduling",
+        "fields": [
+          {
+            "field_id": "estd_end_date",
+            "label": "Estd. End Date",
+            "type": "date",
+            "required": false,
+            "order": 10,
+            "validation": {
+              "type": "date",
+              "format": "YYYY-MM-DD",
+              "error_message": "Estd. End Date must be a valid date in format YYYY-MM-DD"
+            }
+          },
+          {
+            "field_id": "adjusted_end_date",
+            "label": "Adjusted End Date",
+            "type": "date",
+            "required": false,
+            "order": 11,
+            "default_value": "",
+            "visible_when": {
+              "field": "project_otd_status",
+              "equals": "Adjusted Plan"
+            },
+            "required_when": {
+              "field": "project_otd_status",
+              "equals": "Adjusted Plan"
+            },
+            "validation": {
+              "type": "date",
+              "format": "YYYY-MM-DD",
+              "error_message": "Adjusted End Date must be a valid date in format YYYY-MM-DD"
+            }
+          }
+        ]
+      },
+      {
+        "section_id": "status_phase",
+        "title": "Status & Phase",
+        "fields": [
+          {
+            "field_id": "state",
+            "label": "State",
+            "type": "select",
+            "required": true,
+            "order": 7,
+            "default_value": "Evaluation",
+            "lov_source": "state",
+            "validation": {
+              "type": "enum",
+              "allowed_values": [
+                "Funnel",
+                "Evaluation",
+                "Hold",
+                "Active",
+                "Closure",
+                "Cancelled"
+              ],
+              "error_message": "State must be one of: Funnel, Evaluation, Hold, Active, Closure, or Cancelled"
+            }
+          },
+          {
+            "field_id": "project_otd_status",
+            "label": "OTD Status",
+            "type": "select",
+            "required": false,
+            "order": 6,
+            "default_value": "On-Track",
+            "is_system_generated": true,
+            "null_when_state_in": [
+              "Funnel",
+              "Evaluation",
+              "Hold"
+            ],
+            "lov_source": "project_otd_status",
+            "validation": {
+              "type": "enum",
+              "allowed_values": [
+                "On-Track",
+                "On Track",
+                "Adjusted Plan",
+                "Adjusted plan",
+                "Slip"
+              ],
+              "error_message": "OTD Status must be one of: On-Track, Adjusted Plan, or Slip"
+            }
+          },
+          {
+            "field_id": "project_otd_phase",
+            "label": "Phase",
+            "type": "select",
+            "required": true,
+            "order": 8,
+            "default_value": "Discovery",
+            "lov_source": "phase",
+            "validation": {
+              "type": "enum",
+              "allowed_values": [
+                "Agile",
+                "Discovery",
+                "Build",
+                "Funnel",
+                "Launch",
+                "Requirements",
+                "Verify",
+                "Post-Launch"
+              ],
+              "error_message": "Phase must be one of the defined phase values"
+            }
+          },
+          {
+            "field_id": "project_status",
+            "label": "Project Status",
+            "type": "select",
+            "required": false,
+            "order": 18,
+            "blank_when_state_in": [],
+            "lov_source": "project_status",
+            "validation": {
+              "type": "enum",
+              "allowed_values": [
+                "G",
+                "R",
+                "Y",
+                "NA",
+                "Hold"
+              ],
+              "error_message": "Project Status must be one of: G (Green), R (Red), Y (Yellow), NA, or Hold"
+            }
+          }
+        ]
+      },
+      {
+        "section_id": "classification",
+        "title": "Classification & Organization",
+        "fields": [
+          {
+            "field_id": "dt_team_accountable",
+            "label": "DT Team Accountable",
+            "type": "select",
+            "required": true,
+            "order": 5,
+            "lov_source": "dt_team_accountable",
+            "validation": {
+              "type": "enum",
+              "allowed_values": [
+                "Data & AI",
+                "Enterprise Applications",
+                "Technology Enablement & Transformation",
+                "Product Tech Solutions & Operations"
+              ],
+              "error_message": "DT Team Accountable must be a valid team from the LOV"
+            }
+          },
+          {
+            "field_id": "category",
+            "label": "Category",
+            "type": "select",
+            "required": true,
+            "order": 12,
+            "conditional_required": {
+              "condition": "state == 'Funnel'",
+              "when_true": true
+            },
+            "lov_source": "category",
+            "validation": {
+              "type": "enum",
+              "allowed_values": [
+                "MustDo",
+                "Strategic/LTGrowth",
+                "Productivity"
+              ],
+              "error_message": "Category must be a valid category from the LOV"
+            }
+          },
+          {
+            "field_id": "business_unit",
+            "label": "Business Unit",
+            "type": "select",
+            "required": false,
+            "order": 13,
+            "lov_source": "business_unit",
+            "validation": {
+              "type": "enum",
+              "allowed_values": [
+                "All",
+                "Grid",
+                "Mfg",
+                "PERS",
+                "Electrification"
+              ],
+              "error_message": "Business Unit must be a valid unit from the LOV"
+            }
+          },
+          {
+            "field_id": "primary_function",
+            "label": "Primary Function",
+            "type": "select",
+            "required": false,
+            "order": 14,
+            "lov_source": "primary_function",
+            "validation": {
+              "type": "enum",
+              "allowed_values": [
+                "All",
+                "Commercial",
+                "Customer Success",
+                "Engineering",
+                "Finance",
+                "Marketing",
+                "M&A",
+                "DT"
+              ],
+              "error_message": "Primary Function must be a valid function from the LOV"
+            }
+          },
+          {
+            "field_id": "region",
+            "label": "Region",
+            "type": "select",
+            "required": false,
+            "order": 15,
+            "lov_source": "region",
+            "validation": {
+              "type": "enum",
+              "allowed_values": [
+                "Global",
+                "EMEA",
+                "North America",
+                "Asia Pacific",
+                "NAM",
+                "APAC"
+              ],
+              "error_message": "Region must be a valid region from the LOV"
+            }
+          }
+        ]
+      },
+      {
+        "section_id": "stakeholders",
+        "title": "Stakeholders",
+        "fields": [
+          {
+            "field_id": "executive_sponsor",
+            "label": "Executive Sponsor",
+            "type": "text",
+            "required": true,
+            "order": 16,
+            "validation": {
+              "type": "required",
+              "format": "email",
+              "max_length": 255,
+              "error_message": "Executive Sponsor is required and must be a valid email address"
+            }
+          },
+          {
+            "field_id": "dt_teams_involved",
+            "label": "DT Teams Involved",
+            "type": "select",
+            "multi_select": true,
+            "required": false,
+            "order": 20,
+            "lov_source": "dt_team_accountable",
+            "validation": {
+              "type": "optional",
+              "max_length": 500,
+              "error_message": "DT Teams Involved must not exceed 500 characters"
+            }
+          },
+          {
+            "field_id": "dt_lead",
+            "label": "DT Lead",
+            "type": "text",
+            "required": true,
+            "order": 22,
+            "validation": {
+              "type": "required",
+              "format": "email",
+              "max_length": 255,
+              "error_message": "DT Lead is required and must be a valid email address"
+            }
+          },
+          {
+            "field_id": "business_project_lead",
+            "label": "Business Project Lead",
+            "type": "text",
+            "required": true,
+            "order": 23,
+            "validation": {
+              "type": "required",
+              "format": "email",
+              "max_length": 255,
+              "error_message": "Business Project Lead is required and must be a valid email address"
+            }
+          }
+        ]
+      },
+      {
+        "section_id": "effort_resources",
+        "title": "Effort & Resources",
+        "fields": [
+          {
+            "field_id": "level_of_effort",
+            "label": "Level of Effort",
+            "type": "select",
+            "required": false,
+            "order": 24,
+            "lov_source": "level_of_effort",
+            "validation": {
+              "type": "enum",
+              "allowed_values": [
+                "S",
+                "M",
+                "L",
+                "XL",
+                "XXL",
+                "Small",
+                "Medium",
+                "Large",
+                "XLarge",
+                "Extra Large",
+                "TBD"
+              ],
+              "error_message": "Level of Effort must be one of: S, M, L, XL, XXL or Small, Medium, Large, XLarge, Extra Large, TBD"
+            }
+          },
+          {
+            "field_id": "technology",
+            "label": "Technology",
+            "type": "text",
+            "required": false,
+            "order": 25,
+            "validation": {
+              "type": "optional",
+              "max_length": 255,
+              "error_message": "Technology must not exceed 255 characters"
+            }
+          },
+          {
+            "field_id": "budget",
+            "label": "Budget",
+            "type": "number",
+            "required": false,
+            "order": 26,
+            "validation": {
+              "type": "number",
+              "min_value": 0,
+              "error_message": "Budget must be a non-negative number"
+            }
+          }
+        ]
+      },
+      {
+        "section_id": "financial",
+        "title": "Financial Planning",
+        "fields": [
+          {
+            "field_id": "budget_2026_flag",
+            "label": "2026 Budget?",
+            "type": "select",
+            "required": false,
+            "order": 17,
+            "lov_source": "budget_flag",
+            "validation": {
+              "type": "enum",
+              "allowed_values": [
+                "Y",
+                "N",
+                "N/A"
+              ],
+              "error_message": "2026 Budget must be Y (Yes), N (No), or N/A"
+            }
+          },
+          {
+            "field_id": "benefits_plan_2026",
+            "label": "2026 Benefits Plan",
+            "type": "select",
+            "required": false,
+            "order": 18,
+            "lov_source": "benefits_flag",
+            "validation": {
+              "type": "enum",
+              "allowed_values": [
+                "Y",
+                "N",
+                "N/A"
+              ],
+              "error_message": "2026 Benefits Plan must be Y (Yes), N (No), or N/A"
+            }
+          }
+        ]
+      },
+      {
+        "section_id": "filtering",
+        "title": "Filtering & Search",
+        "fields": [
+          {
+            "field_id": "filter_key",
+            "label": "For Filter Purposes",
+            "type": "text",
+            "required": false,
+            "order": 21,
+            "readonly": true,
+            "is_system_generated": true,
+            "description": "Auto-generated concatenation of team and function for filtering",
+            "validation": {
+              "type": "optional"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "form_lovs": {
+    "state": [
+      "Funnel",
+      "Evaluation",
+      "Hold",
+      "Active",
+      "Closure",
+      "Cancelled"
+    ],
+    "project_otd_status": [
+      "On Track",
+      "Adjusted plan",
+      "Slip"
+    ],
+    "phase": [
+      "Agile",
+      "Discovery",
+      "Build",
+      "Funnel",
+      "Launch",
+      "Requirements",
+      "Verify",
+      "Post-Launch"
+    ],
+    "dt_team_accountable": [
+      "Data & AI",
+      "Enterprise Applications",
+      "Technology Enablement & Transformation",
+      "Product Tech Solutions & Operations"
+    ],
+    "category": [
+      "MustDo",
+      "Strategic/LTGrowth",
+      "Productivity"
+    ],
+    "business_unit": [
+      "All",
+      "Grid",
+      "Mfg",
+      "PERS",
+      "Electrification"
+    ],
+    "primary_function": [
+      "All",
+      "Commercial",
+      "Customer Success",
+      "Engineering",
+      "Finance",
+      "Marketing",
+      "M&A",
+      "DT"
+    ],
+    "region": [
+      "North America",
+      "Asia Pacific",
+      "EMEA",
+      "Global",
+      "NAM",
+      "APAC"
+    ],
+    "level_of_effort": [
+      "XXL",
+      "Small",
+      "Medium",
+      "Large",
+      "XLarge",
+      "TBD"
+    ],
+    "project_status": [
+      "G",
+      "R",
+      "Y",
+      "NA",
+      "Hold"
+    ],
+    "budget_flag": [
+      "Y",
+      "N",
+      "N/A"
+    ],
+    "benefits_flag": [
+      "Y",
+      "N",
+      "N/A"
+    ]
+  },
+  "validation_rules": {
+    "date_validation": {
+      "future_dates": "estd_end_date and adjusted_end_date must be in the future",
+      "date_comparison": "adjusted_end_date (if provided) should generally be after or equal to estd_end_date",
+      "format": "YYYY-MM-DD"
+    },
+    "enum_validation": {
+      "state": "Must match one of: Funnel, Evaluation, Hold, Active, Closure, Cancelled",
+      "project_otd_status": "Must match one of the allowed OTD status values",
+      "project_otd_phase": "Must match one of the allowed phase values",
+      "dt_team_accountable": "Must match one of the DT teams from LOV"
+    },
+    "required_field_logic": {
+      "category_conditional": "Required if state == 'Funnel'; otherwise optional",
+      "all_other_conditional": "Project Status, OTD Status, Phase, and Adjusted End Date visibility depend on state/OTD status rules",
+      "otd_status_active_required": "OTD Status is required when state == 'Active'"
+    },
+    "status_phase_logic": {
+      "project_status_blank_when_state_in": [],
+      "otd_status_null_when_state_in": [
+        "Funnel",
+        "Evaluation",
+        "Hold"
+      ],
+      "otd_status_required_when_state_in": [
+        "Active"
+      ],
+      "phase_optional_when_state_in": [
+        "Funnel"
+      ],
+      "adjusted_end_date_required_when_otd_status": "Adjusted Plan"
+    },
+    "text_validation": {
+      "project_name": "1-255 characters, required",
+      "initiative_name": "1-255 characters, required",
+      "description": "1-2000 characters, required",
+      "executive_sponsor": "1-255 characters, required email",
+      "dt_teams_involved": "Optional pick list from DT Team Accountable LOV",
+      "dt_lead": "1-255 characters, required email",
+      "business_project_lead": "1-255 characters, required email",
+      "technology": "0-255 characters, optional"
+    },
+    "numeric_validation": {
+      "budget": "Non-negative number, optional"
+    }
+  },
+  "form_defaults": {
+    "state": "Evaluation",
+    "project_otd_status": "On-Track",
+    "project_otd_phase": "Discovery",
+    "adjusted_end_date": ""
+  },
+  "system_generated_fields": [
+    "project_otd_status",
+    "filter_key"
+  ],
+  "field_order": [
+    "initiative_name",
+    "project_name",
+    "description",
+    "dt_team_accountable",
+    "project_otd_status",
+    "state",
+    "project_otd_phase",
+    "estd_end_date",
+    "adjusted_end_date",
+    "category",
+    "business_unit",
+    "primary_function",
+    "region",
+    "executive_sponsor",
+    "budget_2026_flag",
+    "benefits_plan_2026",
+    "dt_teams_involved",
+    "filter_key",
+    "dt_lead",
+    "business_project_lead",
+    "level_of_effort",
+    "technology",
+    "budget",
+    "project_status"
+  ]
+}

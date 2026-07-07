@@ -1,0 +1,145 @@
+{
+  "source": {
+    "workbook": "Worksheet PMO App Hackathon  1 1.xlsx",
+    "sheet": "Program 2026"
+  },
+  "header_row": 1,
+  "raw_excel_columns": [
+    "Project Status",
+    "Initiative Name",
+    "Project Name",
+    "Description",
+    "DT Team Accountable",
+    "OTD Status",
+    "State",
+    "Phase",
+    "Estd. Start Date",
+    "Estd. End Date",
+    "Adjusted End Date",
+    "Category",
+    "Business Unit",
+    "Primary Function",
+    "Region",
+    "Executive Sponsor",
+    "2026 budget?",
+    "2026 Benefits Plan",
+    "DT Team Accountable",
+    "DT Teams Involved",
+    "For Filter Purposes",
+    "DT lead",
+    "Business Project Lead",
+    "Level of Effort",
+    "Technology",
+    "Budget"
+  ],
+  "dashboard_columns": [
+    "Project Status",
+    "Project Name",
+    "Description",
+    "DT Team Accountable",
+    "OTD Status",
+    "State",
+    "Phase",
+    "Estd. End Date",
+    "Category",
+    "Business Unit",
+    "Primary Function",
+    "Region",
+    "Executive Sponsor",
+    "2026 budget & benefits",
+    "DT Teams Involved & Lead",
+    "Level of Effort",
+    "Technology",
+    "Budget"
+  ],
+  "normalized_record_structure": {
+    "project_status": "Project Status",
+    "initiative_name": "Initiative Name",
+    "project_name": "Project Name",
+    "description": "Description",
+    "dt_team_accountable": "DT Team Accountable",
+    "project_otd_status": "OTD Status",
+    "project_otd_state": "State",
+    "project_otd_phase": "Phase",
+    "estd_start_date": "Estd. Start Date",
+    "estd_end_date": "Estd. End Date",
+    "adjusted_end_date": "Adjusted End Date",
+    "category": "Category",
+    "business_unit": "Business Unit",
+    "primary_function": "Primary Function",
+    "region": "Region",
+    "executive_sponsor": "Executive Sponsor",
+    "budget_2026_flag": "2026 budget?",
+    "benefits_plan_2026": "2026 Benefits Plan",
+    "dt_teams_involved": "DT Teams Involved",
+    "dt_lead": "DT lead",
+    "business_project_lead": "Business Project Lead",
+    "level_of_effort": "Level of Effort",
+    "technology": "Technology",
+    "budget": "Budget"
+  },
+  "display_rules": {
+    "otd_status": {
+      "source": "OTD Status",
+      "background_by_value": {
+        "On-Track": "Brand Green",
+        "Adjusted Plan": "Brand Orange",
+        "Slip": "Brand Red"
+      }
+    },
+    "state": {
+      "source": "State",
+      "background_by_value": "State palette"
+    },
+    "phase": {
+      "source": "Phase",
+      "background_by_value": "Phase palette"
+    },
+    "estd_end_date": {
+      "line_1": "Adjusted End Date (if available)",
+      "line_2": "Estd. End Date",
+      "line_2_color_when_adjusted_exists": "Grey"
+    },
+    "budget_benefits_2026": {
+      "line_1": {
+        "source": "2026 budget?",
+        "color_by_value": {
+          "Y": "Brand Green",
+          "N": "Brand Red"
+        }
+      },
+      "line_2": {
+        "source": "2026 Benefits Plan",
+        "color_by_value": {
+          "Y": "Brand Green",
+          "N": "Brand Red"
+        },
+        "fallback_for_other_values": "Default text color"
+      }
+    },
+    "dt_teams_involved_lead": {
+      "line_1": "DT Teams Involved",
+      "line_2": {
+        "prefix": "DT Lead: ",
+        "source": "DT lead"
+      },
+      "line_3": {
+        "prefix": "Business Project Lead: ",
+        "source": "Business Project Lead"
+      }
+    },
+    "default_column_rendering": {
+      "rule": "For all dashboard columns without explicit display rules, render the Excel value as-is using a 1:1 mapping with the same column name.",
+      "formatting": "No additional visual formatting"
+    },
+    "dt_team_accountable": {
+      "line_1": "DT Team Accountable",
+      "line_2_lookup": {
+        "Data & AI": "Minal <MINAL.Merchant@gevernova.com>",
+        "Enterprise Applications": "Karthik <AnilKumar.Karthik@gevernova.com>",
+        "Technology Enablement & Transformation": "Taufan <Taufan.Tjioe@gevernova.com>",
+        "Product Tech Solutions & Operations": "Steven <stevensmith@gevernova.com>"
+      }
+    }
+  }
+}

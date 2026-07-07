@@ -1,0 +1,820 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="wizard-shell">
+  <div class="wizard-header">
+    <h2>Add Project</h2>
+  </div>
+  <div class="wizard-progress">
+    <div class="wizard-step is-active" data-step="1"><span>1</span><em>Project Identity</em></div>
+    <div class="wizard-step" data-step="2"><span>2</span><em>Ownership & Team</em></div>
+    <div class="wizard-step" data-step="3"><span>3</span><em>Classification & Timeline</em></div>
+  </div>
+  <form id="projectForm" class="wizard-form">
+    <section class="wizard-panel is-active" data-panel="1">
+      <h3 class="wizard-panel-heading">
+        <span class="wizard-panel-heading-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 3v5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span>Project Identity</span>
+      </h3>
+      <div class="grid1">
+        <label><span class="field-label">Project Status <span class="req">*</span></span>
+          <select name="project_status" required>
+            <option value="">— Select —</option>
+            {% for option in lovs.get('project_status', []) %}
+            <option value="{{ option }}">{{ option }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label><span class="field-label">Initiative Name <span class="req">*</span></span>
+          <input name="initiative_name" list="initiativeSuggestions" placeholder="Type to search or select initiative..." required autocomplete="off" />
+          <datalist id="initiativeSuggestions"></datalist>
+          <small id="initiativeNameMsg" class="inline-help">&nbsp;</small>
+        </label>
+        <label><span class="field-label">Project Name <span class="req">*</span></span>
+          <input name="project_name" list="projectNameSuggestions" placeholder="Enter unique project name" required autocomplete="off" />
+          <datalist id="projectNameSuggestions"></datalist>
+          <small id="projectNameMsg" class="inline-help">&nbsp;</small>
+        </label>
+        <label><span class="field-label">Description <span class="req">*</span></span>
+          <textarea name="description" placeholder="Provide a clear, concise description of the project scope and objectives..." required rows="3"></textarea>
+          <div class="char-counter"><span id="charCount">0</span> / 500 characters</div>
+        </label>
+      </div>
+      <div class="wizard-actions-row">
+        <span class="wizard-footer-text">Fields marked <span class="req">*</span> are required</span>
+        <div>
+          <a href="/dashboard" class="wizard-btn wizard-btn-secondary">Cancel</a>
+          <button type="button" id="stepNext1" class="wizard-btn wizard-btn-primary">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="wizard-panel" data-panel="2">
+      <h3 class="wizard-panel-heading">
+        <span class="wizard-panel-heading-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8" cy="9" r="3" stroke="currentColor" stroke-width="1.8"/>
+            <circle cx="17" cy="8" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M3 20c0-3 2.4-5 5-5s5 2 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M14 19c.2-2 1.7-3.5 3.8-3.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span>Ownership &amp; Team</span>
+      </h3>
+      <div class="grid2">
+        <label><span class="field-label">DT Team Accountable <span class="req">*</span></span>
+          <select name="dt_team_accountable" required>
+            <option value="">— Select —</option>
+            {% for option in lovs.get('dt_team_accountable', []) %}
+            <option value="{{ option }}">{{ option }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label><span class="field-label">DT Lead <span class="req">*</span> <span class="field-hint">- must be email</span></span>
+          <input type="email" name="dt_lead" placeholder="taufan.tjioe@gevernova.com" required title="Enter a valid email address" />
+          <small class="inline-help email-help">Must be a Valid @gevernova.com address</small>
+        </label>
+        <label><span class="field-label">Executive Sponsor <span class="req">*</span> <span class="field-hint">- must be email</span></span>
+          <input type="email" name="executive_sponsor" placeholder="sponsor@gevernova.com" required title="Enter a valid email address" />
+          <small class="inline-help email-help">Must be a Valid @gevernova.com address</small>
+        </label>
+        <label><span class="field-label">Business Project Lead <span class="req">*</span> <span class="field-hint">- must be email</span></span>
+          <input type="email" name="business_project_lead" placeholder="biz.lead@gevernova.com" required title="Enter a valid email address" />
+          <small class="inline-help email-help">Must be a Valid @gevernova.com address</small>
+        </label>
+        <label class="span2"><span class="field-label">DT Teams Involved <span class="field-hint">- multi-select</span></span>
+          <div class="multi-picklist" id="dtTeamsPicklist" data-placeholder="Click to add more teams...">
+            <input type="hidden" name="dt_teams_involved" id="dtTeamsInvolvedValue" value="" />
+            <div class="multi-picklist-control">
+              <div class="multi-picklist-chips" id="dtTeamsChips">
+                <span class="multi-picklist-empty">Click to add more teams...</span>
+              </div>
+              <input type="text" class="multi-picklist-input" id="dtTeamsSearch" placeholder="Click to add more teams..." autocomplete="off" />
+              <button type="button" class="multi-picklist-toggle" id="dtTeamsToggle" aria-label="Open team list">▾</button>
+            </div>
+            <div class="multi-picklist-menu" id="dtTeamsMenu">
+              {% for option in lovs.get('dt_team_accountable', []) %}
+              <button type="button" data-value="{{ option }}">{{ option }}</button>
+              {% endfor %}
+            </div>
+          </div>
+          <small class="inline-help email-help">Select one or more teams from the same LOV as DT Team Accountable.</small>
+        </label>
+      </div>
+      <div class="wizard-actions-row">
+        <span class="wizard-footer-text">Fields marked <span class="req">*</span> are required</span>
+        <div>
+          <a href="/dashboard" class="wizard-btn wizard-btn-secondary">Cancel</a>
+          <button type="button" id="stepBack2" class="wizard-btn wizard-btn-secondary">Back</button>
+          <button type="button" id="stepNext2" class="wizard-btn wizard-btn-primary">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="wizard-panel" data-panel="3">
+      <div class="wizard-section">
+        <h3 class="wizard-section-title">Status &amp; Effort</h3>
+        <div class="grid3">
+              <label><span class="field-label">State <span class="req">*</span></span>
+            <select name="state" required>
+              <option value="">— Select —</option>
+              <option value="Funnel">Funnel</option>
+              <option value="Evaluation" selected>Evaluation</option>
+              <option value="Hold">Hold</option>
+              <option value="Active">Active</option>
+              <option value="Closure">Closure</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+                <small class="section-note">Only Active available for new projects</small>
+          </label>
+              <label><span class="field-label">OTD Status <span class="req">*</span></span>
+            <select name="project_otd_status">
+              <option value="">— Select —</option>
+              <option value="On Track">On Track</option>
+              <option value="Adjusted plan">Adjusted plan</option>
+                  <option value="Slip">Off Track</option>
+            </select>
+          </label>
+          <label><span class="field-label">Level of Effort <span class="field-hint">- up to XXL</span></span>
+            <select name="level_of_effort">
+              <option value="">— Select —</option>
+              <option value="Small">S — Small</option>
+              <option value="Medium">M — Medium</option>
+              <option value="Large">L — Large</option>
+              <option value="XLarge">XL — XLarge</option>
+              <option value="XXL">XXL</option>
+              <option value="TBD">TBD</option>
+            </select>
+          </label>
+              <div id="otdWarning" class="wizard-warning hidden">Off Track: ensure DT Lead has a recovery plan before submitting.</div>
+        </div>
+      </div>
+
+      <div class="wizard-section">
+        <h3 class="wizard-section-title">Classification</h3>
+        <div class="grid3">
+          <label><span class="field-label">Phase <span class="req">*</span></span>
+            <select name="project_otd_phase" required>
+              <option value="">— Select —</option>
+              <option value="Discovery" selected>Discovery</option>
+              <option value="Agile">Agile</option>
+              <option value="Build">Build</option>
+              <option value="Funnel">Funnel</option>
+              <option value="Launch">Launch</option>
+              <option value="Requirements">Requirements</option>
+              <option value="Verify">Verify</option>
+              <option value="Post-Launch">Post-Launch</option>
+            </select>
+          </label>
+          <label><span class="field-label">Category</span>
+            <select name="category">
+              <option value="">— Select —</option>
+              <option value="MustDo">MustDo</option>
+              <option value="Strategic/LTGrowth">Strategic/LTGrowth</option>
+              <option value="Productivity">Productivity</option>
+            </select>
+          </label>
+          <label><span class="field-label">Business Unit</span>
+            <select name="business_unit">
+              <option value="">— Select —</option>
+              <option value="All">ALL</option>
+              <option value="Grid">GRID</option>
+              <option value="Mfg">MFG</option>
+              <option value="PERS">PERS</option>
+              <option value="Electrification">ELECTRIFICATION</option>
+            </select>
+          </label>
+          <label><span class="field-label">Primary Function</span>
+            <select name="primary_function">
+              <option value="">— Select —</option>
+              <option>All</option>
+              <option>Commercial</option>
+              <option>Customer Success</option>
+              <option>Engineering</option>
+              <option>Finance</option>
+              <option>Marketing</option>
+              <option>M&amp;A</option>
+              <option>DT</option>
+            </select>
+          </label>
+          <label><span class="field-label">Region</span>
+            <select name="region">
+              <option value="">— Select —</option>
+              <option>Global</option>
+              <option>EMEA</option>
+              <option>North America</option>
+              <option>Asia Pacific</option>
+            </select>
+          </label>
+          <label><span class="field-label">Technology / Tools</span><input name="technology" placeholder="Azure, React, Salesforce..." /></label>
+        </div>
+      </div>
+
+      <div class="wizard-section">
+        <h3 class="wizard-section-title">Timeline &amp; Budget</h3>
+        <div class="grid3">
+              <label><span class="field-label">Actual End Date <span id="estdMandatoryHint" class="field-hint hidden">- mandatory for On Track / Off Track</span></span><input type="date" name="estd_end_date" /></label>
+          <label id="adjWrap"><span class="field-label">Adjusted End Date <span class="field-hint">- mandatory for Adjusted Plan</span></span><input type="date" name="adjusted_end_date" /></label>
+          <label><span class="field-label">Budget Amount</span><input type="number" name="budget" placeholder="Enter budget amount" min="0" /></label>
+          <div id="budgetBenefitsFields" class="span3"></div>
+        </div>
+      </div>
+      <div class="wizard-actions-row">
+        <span class="wizard-footer-text">Fields marked <span class="req">*</span> are required</span>
+        <div>
+          <a href="/dashboard" class="wizard-btn wizard-btn-secondary">Cancel</a>
+          <button type="button" id="stepBack3" class="wizard-btn wizard-btn-secondary">Back</button>
+          <button type="submit" class="wizard-btn wizard-btn-submit"><span class="segmented-icon">✓</span> Create Project</button>
+        </div>
+      </div>
+    </section>
+    <p id="result"></p>
+  </form>
+</div>
+
+<div id="projectCreateSuccessModal" class="modal hidden">
+  <div class="modal-content success-modal-content">
+    <div class="success-shell">
+      <div class="success-header">
+        <h3>Add Project</h3>
+        <button type="button" id="projectSuccessCloseX" class="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="success-progress">
+        <div class="success-progress-step"><span>✓</span><em>Project Identity</em></div>
+        <div class="success-progress-step"><span>✓</span><em>Ownership &amp; Team</em></div>
+        <div class="success-progress-step"><span>✓</span><em>Classification &amp; Timeline</em></div>
+      </div>
+      <div class="success-body">
+        <div class="success-check">✓</div>
+        <h3 class="success-title">Project Created Successfully</h3>
+        <p class="success-text">Your project has been added to the Grid SW Portfolio. The DT Lead will receive automated status reminders on the 3rd Friday of each month.</p>
+        <div id="projectSuccessId" class="success-project-id"></div>
+        <div class="success-actions">
+          <button type="button" id="projectSuccessAddAnother" class="wizard-btn success-secondary">Add Another Project</button>
+          <button type="button" id="projectSuccessBackToDashboard" class="wizard-btn success-primary">Back to Dashboard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const CURRENT_YEAR = Number('{{ current_year }}');
+const NEXT_YEAR = Number('{{ next_year }}');
+
+const form = document.getElementById('projectForm');
+const result = document.getElementById('result');
+const wizardSteps = Array.from(document.querySelectorAll('.wizard-step'));
+const wizardPanels = Array.from(document.querySelectorAll('.wizard-panel'));
+const stateInput = form.querySelector('[name="state"]');
+const otdInput = form.querySelector('[name="project_otd_status"]');
+const statusInput = form.querySelector('[name="project_status"]');
+const phaseInput = form.querySelector('[name="project_otd_phase"]');
+const estdEndDateInput = form.querySelector('[name="estd_end_date"]');
+const estdMandatoryHint = document.getElementById('estdMandatoryHint');
+const adjWrap = document.getElementById('adjWrap');
+const adjusted = form.querySelector('[name="adjusted_end_date"]');
+const initiativeNameInput = form.querySelector('[name="initiative_name"]');
+const initiativeSuggestionsEl = document.getElementById('initiativeSuggestions');
+const projectNameInput = form.querySelector('[name="project_name"]');
+const projectNameSuggestionsEl = document.getElementById('projectNameSuggestions');
+const descriptionInput = form.querySelector('[name="description"]');
+const charCountEl = document.getElementById('charCount');
+const initiativeNameMsg = document.getElementById('initiativeNameMsg');
+const projectNameMsg = document.getElementById('projectNameMsg');
+let currentWizardStep = 1;
+const dtTeamsPicklist = document.getElementById('dtTeamsPicklist');
+const projectSuccessModal = document.getElementById('projectCreateSuccessModal');
+const projectSuccessId = document.getElementById('projectSuccessId');
+
+function openProjectSuccessModal(projectId) {
+  if (projectSuccessId) projectSuccessId.textContent = projectId || '';
+  projectSuccessModal?.classList.remove('hidden');
+}
+
+function closeProjectSuccessModal() {
+  projectSuccessModal?.classList.add('hidden');
+}
+
+// Character counter for description
+if (descriptionInput && charCountEl) {
+  descriptionInput.addEventListener('input', () => {
+    charCountEl.textContent = descriptionInput.value.length;
+  });
+}
+
+async function fetchElasticSuggestions(endpoint, query = '', maxItems = 500) {
+  const params = new URLSearchParams({ q: String(query || ''), max_items: String(maxItems) });
+  const resp = await fetch(`${endpoint}?${params.toString()}`);
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error || 'Unable to load suggestions');
+  return Array.isArray(data.suggestions) ? data.suggestions : [];
+}
+
+function hydrateInitiativeDatalist(listEl, suggestions) {
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  (suggestions || [])
+    .map(item => String(item || '').trim())
+    .filter(Boolean)
+    .forEach(item => {
+      const option = document.createElement('option');
+      option.value = item;
+      listEl.appendChild(option);
+    });
+}
+
+function wireElasticSearch(inputEl, listEl, endpoint) {
+  if (!inputEl || !listEl) return;
+  let debounceTimer = null;
+
+  const refreshSuggestions = async () => {
+    try {
+      const suggestions = await fetchElasticSuggestions(endpoint, inputEl.value || '', 500);
+      hydrateInitiativeDatalist(listEl, suggestions);
+    } catch (_) {
+      hydrateInitiativeDatalist(listEl, []);
+    }
+  };
+
+  inputEl.addEventListener('focus', refreshSuggestions);
+  inputEl.addEventListener('input', () => {
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(refreshSuggestions, 140);
+  });
+}
+
+function normalizePicklistValues(value) {
+  if (Array.isArray(value)) {
+    return value.map(item => String(item).trim()).filter(Boolean);
+  }
+  return String(value || '')
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+function initMultiPicklist(root) {
+  if (!root) return;
+  const hidden = root.querySelector('input[type="hidden"]');
+  const chips = root.querySelector('.multi-picklist-chips');
+  const input = root.querySelector('.multi-picklist-input');
+  const toggle = root.querySelector('.multi-picklist-toggle');
+  const menu = root.querySelector('.multi-picklist-menu');
+  const placeholder = root.dataset.placeholder || 'Click to add more teams...';
+  let selected = new Set();
+
+  function syncHidden() {
+    if (hidden) hidden.value = Array.from(selected).join(', ');
+  }
+
+  function renderMenu(filterText = '') {
+    const query = filterText.trim().toLowerCase();
+    menu.querySelectorAll('button[data-value]').forEach(button => {
+      const value = button.dataset.value || '';
+      const label = (button.textContent || '').trim().toLowerCase();
+      button.classList.toggle('is-selected', selected.has(value));
+      button.hidden = query ? !label.includes(query) : false;
+    });
+  }
+
+  function renderChips() {
+    if (!chips) return;
+    chips.innerHTML = '';
+    if (!selected.size) {
+      chips.innerHTML = `<span class="multi-picklist-empty">${placeholder}</span>`;
+      if (input) input.value = '';
+      syncHidden();
+      renderMenu(input ? input.value : '');
+      return;
+    }
+
+    selected.forEach(value => {
+      const chip = document.createElement('span');
+      chip.className = 'multi-picklist-chip';
+      chip.innerHTML = `<span>${value}</span><button type="button" aria-label="Remove ${value}">&times;</button>`;
+      chip.querySelector('button')?.addEventListener('click', () => {
+        selected.delete(value);
+        renderChips();
+      });
+      chips.appendChild(chip);
+    });
+    syncHidden();
+    renderMenu(input ? input.value : '');
+  }
+
+  function openMenu() {
+    root.classList.add('is-open');
+    renderMenu(input ? input.value : '');
+  }
+
+  function closeMenu() {
+    root.classList.remove('is-open');
+    if (input) input.value = '';
+    renderMenu('');
+  }
+
+  function toggleValue(value) {
+    const normalized = String(value || '').trim();
+    if (!normalized) return;
+    if (selected.has(normalized)) selected.delete(normalized);
+    else selected.add(normalized);
+    renderChips();
+  }
+
+  root.querySelectorAll('button[data-value]').forEach(button => {
+    button.addEventListener('click', () => {
+      toggleValue(button.dataset.value);
+      if (input) input.focus();
+      openMenu();
+    });
+  });
+
+  if (input) {
+    input.addEventListener('focus', openMenu);
+    input.addEventListener('input', () => {
+      openMenu();
+      renderMenu(input.value);
+    });
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Backspace' && !input.value && selected.size) {
+        const last = Array.from(selected).pop();
+        if (last) selected.delete(last);
+        renderChips();
+      }
+    });
+  }
+
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      if (root.classList.contains('is-open')) closeMenu();
+      else openMenu();
+      if (input) input.focus();
+    });
+  }
+
+  document.addEventListener('click', (event) => {
+    if (!root.contains(event.target)) {
+      closeMenu();
+    }
+  });
+
+  root.setValues = (value) => {
+    selected = new Set(normalizePicklistValues(value));
+    renderChips();
+  };
+
+  root.getValues = () => Array.from(selected);
+  renderChips();
+  closeMenu();
+}
+
+if (dtTeamsPicklist) {
+  initMultiPicklist(dtTeamsPicklist);
+}
+
+wireElasticSearch(initiativeNameInput, initiativeSuggestionsEl, '/project/api/initiative-suggestions');
+wireElasticSearch(projectNameInput, projectNameSuggestionsEl, '/project/api/project-name-suggestions');
+
+function setWizardStep(step) {
+  currentWizardStep = Math.max(1, Math.min(3, step));
+  wizardSteps.forEach((item, idx) => {
+    const n = idx + 1;
+    item.classList.toggle('is-active', n === currentWizardStep);
+    item.classList.toggle('is-done', n < currentWizardStep);
+  });
+  wizardPanels.forEach((panel, idx) => {
+    panel.classList.toggle('is-active', idx + 1 === currentWizardStep);
+  });
+}
+
+function renderBudgetBenefitFields() {
+  const container = document.getElementById('budgetBenefitsFields');
+  if (!container) return;
+
+  const years = [CURRENT_YEAR, NEXT_YEAR];
+  const optionsHtml = `
+    <option value="">— Select —</option>
+    <option value="Y">Y</option>
+    <option value="N">N</option>
+    <option value="N/A">N/A</option>
+  `;
+
+  container.innerHTML = `
+    <label>
+      <span class="field-label">Budget Plan</span>
+      <div class="segmented-choice" id="budgetChoiceGroup">
+        <button type="button" class="segmented-option" data-target="budget" data-value="Y"><span class="segmented-icon">✓</span> Yes</button>
+        <button type="button" class="segmented-option is-negative" data-target="budget" data-value="N"><span class="segmented-icon">✕</span> No</button>
+      </div>
+    </label>
+    <label>
+      <span class="field-label">Benefits Plan</span>
+      <div class="segmented-choice" id="benefitsChoiceGroup">
+        <button type="button" class="segmented-option" data-target="benefits" data-value="Y"><span class="segmented-icon">✓</span> Yes</button>
+        <button type="button" class="segmented-option is-negative" data-target="benefits" data-value="N"><span class="segmented-icon">✕</span> No</button>
+      </div>
+    </label>
+    <div id="budgetBenefitFieldsContainer" style="display:contents;"></div>
+  `;
+
+  // Create hidden selects for each year that get synced
+  const hiddenContainer = document.getElementById('budgetBenefitFieldsContainer');
+  hiddenContainer.innerHTML = years.map((year) => `
+    <select name="budget_${year}_flag" id="budget_${year}_flag" style="display:none;"></select>
+    <select name="benefits_plan_${year}" id="benefits_plan_${year}" style="display:none;"></select>
+  `).join('');
+
+  // Populate hidden selects with options
+  years.forEach(year => {
+    const budgetSelects = [document.getElementById(`budget_${year}_flag`)];
+    const benefitsSelects = [document.getElementById(`benefits_plan_${year}`)];
+    const allSelects = [...budgetSelects, ...benefitsSelects];
+    allSelects.forEach(sel => {
+      if (sel) {
+        const opts = optionsHtml.split('</option>').slice(0, -1);
+        sel.innerHTML = optionsHtml;
+      }
+    });
+  });
+
+  container.querySelectorAll('.segmented-option').forEach(button => {
+    button.addEventListener('click', () => {
+      syncBudgetBenefitValues(button.dataset.target, button.dataset.value);
+    });
+  });
+  syncBudgetBenefitValues('budget', '');
+  syncBudgetBenefitValues('benefits', '');
+}
+
+function syncBudgetBenefitValues(target, selectedValue) {
+  const budgetVal = target === 'budget' ? selectedValue : (document.getElementById(`budget_${CURRENT_YEAR}_flag`)?.value || '');
+  const benefitsVal = target === 'benefits' ? selectedValue : (document.getElementById(`benefits_plan_${CURRENT_YEAR}`)?.value || '');
+  const years = [CURRENT_YEAR, NEXT_YEAR];
+  years.forEach(year => {
+    const budgetSel = document.getElementById(`budget_${year}_flag`);
+    const benefitsSel = document.getElementById(`benefits_plan_${year}`);
+    if (budgetSel) budgetSel.value = budgetVal;
+    if (benefitsSel) benefitsSel.value = benefitsVal;
+  });
+  document.querySelectorAll('#budgetChoiceGroup .segmented-option').forEach(button => {
+    button.classList.toggle('is-active', button.dataset.value === budgetVal);
+  });
+  document.querySelectorAll('#benefitsChoiceGroup .segmented-option').forEach(button => {
+    button.classList.toggle('is-active', button.dataset.value === benefitsVal);
+  });
+}
+
+function setDisabledHint(el, message) {
+  if (!el) return;
+  if (el.disabled) {
+    el.title = message;
+    el.setAttribute('aria-describedby', 'disabled-field-note');
+  } else {
+    el.title = '';
+    el.removeAttribute('aria-describedby');
+  }
+}
+
+function normalizePicklistValues(value) {
+  if (Array.isArray(value)) {
+    return value.map(item => String(item).trim()).filter(Boolean);
+  }
+  return String(value || '')
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+function initMultiPicklist(root) {
+  if (!root) return null;
+  const hidden = root.querySelector('input[type="hidden"]');
+  const chips = root.querySelector('.multi-picklist-chips');
+  const input = root.querySelector('.multi-picklist-input');
+  const toggle = root.querySelector('.multi-picklist-toggle');
+  const menu = root.querySelector('.multi-picklist-menu');
+  const placeholder = root.dataset.placeholder || 'Click to add more teams...';
+  let selected = new Set();
+
+  function syncHidden() {
+    if (hidden) hidden.value = Array.from(selected).join(', ');
+  }
+
+  function renderMenu(filterText = '') {
+    const query = filterText.trim().toLowerCase();
+    menu?.querySelectorAll('button[data-value]').forEach(button => {
+      const value = button.dataset.value || '';
+      const label = (button.textContent || '').trim().toLowerCase();
+      button.classList.toggle('is-selected', selected.has(value));
+      button.hidden = !!query && !label.includes(query);
+    });
+  }
+
+  function renderChips() {
+    if (!chips) return;
+    chips.innerHTML = '';
+    if (!selected.size) {
+      chips.innerHTML = `<span class="multi-picklist-empty">${placeholder}</span>`;
+      if (input) input.value = '';
+      syncHidden();
+      renderMenu(input ? input.value : '');
+      return;
+    }
+
+    selected.forEach(value => {
+      const chip = document.createElement('span');
+      chip.className = 'multi-picklist-chip';
+      chip.innerHTML = `<span>${value}</span><button type="button" aria-label="Remove ${value}">&times;</button>`;
+      chip.querySelector('button')?.addEventListener('click', () => {
+        selected.delete(value);
+        renderChips();
+      });
+      chips.appendChild(chip);
+    });
+    syncHidden();
+    renderMenu(input ? input.value : '');
+  }
+
+  function openMenu() {
+    root.classList.add('is-open');
+    renderMenu(input ? input.value : '');
+  }
+
+  function closeMenu() {
+    root.classList.remove('is-open');
+    if (input) input.value = '';
+    renderMenu('');
+  }
+
+  function toggleValue(value) {
+    const normalized = String(value || '').trim();
+    if (!normalized) return;
+    if (selected.has(normalized)) selected.delete(normalized);
+    else selected.add(normalized);
+    renderChips();
+  }
+
+  root.querySelectorAll('button[data-value]').forEach(button => {
+    button.addEventListener('click', () => {
+      toggleValue(button.dataset.value);
+      input?.focus();
+      openMenu();
+    });
+  });
+
+  input?.addEventListener('focus', openMenu);
+  input?.addEventListener('input', () => { openMenu(); renderMenu(input.value); });
+  input?.addEventListener('keydown', event => {
+    if (event.key === 'Backspace' && !input.value && selected.size) {
+      const last = Array.from(selected).pop();
+      if (last) selected.delete(last);
+      renderChips();
+    }
+  });
+  toggle?.addEventListener('click', () => {
+    if (root.classList.contains('is-open')) closeMenu();
+    else openMenu();
+    input?.focus();
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!root.contains(event.target)) closeMenu();
+  });
+
+  root.setValues = (value) => {
+    selected = new Set(normalizePicklistValues(value));
+    renderChips();
+  };
+  root.getValues = () => Array.from(selected);
+  renderChips();
+  closeMenu();
+  return root;
+}
+
+initMultiPicklist(dtTeamsPicklist);
+
+function applyRules() {
+  const state = (stateInput.value || '').trim();
+  const activeState = state === 'Active';
+
+  if (!activeState) otdInput.value = '';
+  otdInput.disabled = !activeState;
+  otdInput.required = activeState;
+  setDisabledHint(otdInput, 'OTD Status is enabled only when State is Active.');
+
+  if (state === 'Funnel' && !phaseInput.value) phaseInput.value = 'Discovery';
+
+  const otdVal = (otdInput.value || '').toLowerCase().replace('-', ' ').trim();
+  const showAdj = otdVal === 'adjusted plan';
+  const requireActualEndDate = otdVal === 'on track' || otdVal === 'slip';
+  const warning = document.getElementById('otdWarning');
+  estdEndDateInput.required = requireActualEndDate;
+  if (estdMandatoryHint) estdMandatoryHint.classList.toggle('hidden', !requireActualEndDate);
+  adjWrap.style.display = showAdj ? 'flex' : 'none';
+  adjusted.required = showAdj;
+  if (!showAdj) adjusted.value = '';
+  adjusted.disabled = !showAdj;
+  if (warning) warning.classList.toggle('hidden', otdVal !== 'slip');
+  setDisabledHint(adjusted, 'Adjusted End Date is disabled until OTD Status is set to Adjusted plan.');
+}
+
+function showNameValidation(message) {
+  const text = message || '\u00A0';
+  initiativeNameMsg.textContent = text;
+  projectNameMsg.textContent = text;
+  const invalid = !!message;
+  initiativeNameInput.setCustomValidity(invalid ? message : '');
+  projectNameInput.setCustomValidity(invalid ? message : '');
+}
+
+async function validateNamePairOnComplete() {
+  const initiative = (initiativeNameInput.value || '').trim();
+  const project = (projectNameInput.value || '').trim();
+  if (!initiative || !project) {
+    showNameValidation('');
+    return;
+  }
+
+  try {
+    const params = new URLSearchParams({ initiative_name: initiative, project_name: project });
+    const resp = await fetch(`/project/api/validate-names?${params.toString()}`);
+    const data = await resp.json();
+    if (data.valid) {
+      showNameValidation('');
+    } else {
+      showNameValidation(data.message || 'Project Name and Initiative Name combination already exists');
+    }
+  } catch (_) {
+    showNameValidation('');
+  }
+}
+
+initiativeNameInput.addEventListener('blur', validateNamePairOnComplete);
+projectNameInput.addEventListener('blur', validateNamePairOnComplete);
+initiativeNameInput.addEventListener('input', () => showNameValidation(''));
+projectNameInput.addEventListener('input', () => showNameValidation(''));
+
+stateInput.addEventListener('change', applyRules);
+otdInput.addEventListener('change', applyRules);
+document.getElementById('stepNext1').addEventListener('click', () => setWizardStep(2));
+document.getElementById('stepBack2').addEventListener('click', () => setWizardStep(1));
+document.getElementById('stepNext2').addEventListener('click', () => setWizardStep(3));
+document.getElementById('stepBack3').addEventListener('click', () => setWizardStep(2));
+renderBudgetBenefitFields();
+applyRules();
+setWizardStep(1);
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  // Temporarily re-enable disabled selects so FormData captures their (blank) values
+  const wasDisabled = [];
+  form.querySelectorAll('[disabled]').forEach(el => { el.disabled = false; wasDisabled.push(el); });
+  const formData = new FormData(form);
+  const payload = {};
+  for (const [key, value] of formData.entries()) {
+    if (payload[key] === undefined) {
+      payload[key] = value;
+    } else {
+      payload[key] = `${payload[key]}, ${value}`;
+    }
+  }
+  if (dtTeamsPicklist?.getValues) {
+    payload.dt_teams_involved = dtTeamsPicklist.getValues();
+  }
+  wasDisabled.forEach(el => el.disabled = true);
+  const resp = await fetch('/project/add', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+  const data = await resp.json();
+  if (data.success) {
+    result.textContent = '';
+    result.className = '';
+    form.reset();
+    dtTeamsPicklist?.setValues([]);
+    renderBudgetBenefitFields();
+    applyRules();
+    setWizardStep(1);
+    openProjectSuccessModal(data.project_id);
+  } else {
+    result.textContent = (data.errors || []).map(e => `${e.field}: ${e.message}`).join(' | ') || data.error;
+    result.className = 'error';
+  }
+});
+
+document.getElementById('projectSuccessCloseX')?.addEventListener('click', closeProjectSuccessModal);
+document.getElementById('projectSuccessAddAnother')?.addEventListener('click', () => {
+  closeProjectSuccessModal();
+  form.reset();
+  dtTeamsPicklist?.setValues([]);
+  renderBudgetBenefitFields();
+  applyRules();
+  setWizardStep(1);
+});
+document.getElementById('projectSuccessBackToDashboard')?.addEventListener('click', () => {
+  window.location.href = '/dashboard';
+});
+</script>
+{% endblock %}

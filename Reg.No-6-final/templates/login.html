@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - Grid SW Project Portfolio</title>
+  <link rel="icon" type="image/png" href="/static/images/GEV.png" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body class="login-body">
+  <main class="login-wrap">
+    <div class="login-container">
+      <div class="login-logo">
+        <img src="/static/images/GEV_BIG.png" alt="GE Vernova" />
+      </div>
+      <form method="post" class="login-card">
+        <h1 class="login-title">Grid SW Project Portfolio</h1>
+        <p class="login-subtitle">Sign in to continue</p>
+        {% if error %}<p class="error">{{ error }}</p>{% endif %}
+        <div class="login-form-group">
+          <label class="login-label">Username</label>
+          <input type="text" name="username" class="login-input" placeholder="Enter your username" required autofocus />
+        </div>
+        <div class="login-form-group">
+          <label class="login-label">Password</label>
+          <input type="password" name="password" class="login-input" placeholder="Enter your password" required />
+        </div>
+        <button type="submit" class="login-button">Sign In</button>
+        <small class="login-hint">Use seeded admin credentials from environment (default: TestUser)</small>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

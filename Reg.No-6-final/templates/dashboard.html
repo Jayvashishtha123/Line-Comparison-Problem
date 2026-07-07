@@ -1,0 +1,704 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="toolbar">
+  <div class="toolbar-left">
+    <button id="toggleGrouping" type="button">
+      <span class="toolbar-left-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 7h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M7 17h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M15 4l3 3-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 14l-3 3 3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span>Toggle Group/Flat</span>
+    </button>
+    <button id="expandAll" type="button">
+      <span class="toolbar-left-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span>Expand All</span>
+    </button>
+    <button id="collapseAll" type="button">
+      <span class="toolbar-left-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span>Collapse All</span>
+    </button>
+  </div>
+  <div class="toolbar-right">
+    <button id="clearFilters" class="hidden">Clear Filter(s)</button>
+    <div class="search-wrap">
+      <input id="globalSearch" placeholder="Search projects..." />
+      <div id="suggestions" class="suggestions"></div>
+    </div>
+    <select id="pageSize">
+      <option>10</option><option>20</option><option>30</option><option>40</option><option>50</option>
+      <option>60</option><option>70</option><option>80</option><option>90</option><option>100</option>
+    </select>
+    <button id="exportCsv" type="button" aria-label="Export CSV">
+      <span class="toolbar-btn-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M8 11l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="toolbar-btn-label">Export CSV</span>
+    </button>
+  </div>
+</section>
+<input id="importFileInput" type="file" accept=".xlsx,.csv" class="hidden" />
+
+<section class="summary-cards" id="summaryCards">
+  <article class="summary-card total">
+    <h4 class="summary-card-title">Total Projects</h4>
+    <div class="summary-card-value" id="cardTotalProjects">0</div>
+    <div class="summary-card-sub" id="cardTotalProjectsSub">0 initiatives</div>
+  </article>
+  <article class="summary-card ontrack">
+    <h4 class="summary-card-title">On Track</h4>
+    <div class="summary-card-value" id="cardOnTrack">0</div>
+    <div class="summary-card-sub" id="cardOnTrackSub">0% of portfolio</div>
+  </article>
+  <article class="summary-card atrisk">
+    <h4 class="summary-card-title">At Risk</h4>
+    <div class="summary-card-value" id="cardAtRisk">0</div>
+    <div class="summary-card-sub" id="cardAtRiskSub">0% of portfolio</div>
+    <div class="summary-card-note">Project Status Y (Yellow)</div>
+  </article>
+  <article class="summary-card offtrack">
+    <h4 class="summary-card-title">Off Track</h4>
+    <div class="summary-card-value" id="cardOffTrack">0</div>
+    <div class="summary-card-sub" id="cardOffTrackSub">0% of portfolio</div>
+    <div class="summary-card-note">Project Status R (Red)</div>
+  </article>
+  <article class="summary-card overdue">
+    <h4 class="summary-card-title">Overdue</h4>
+    <div class="summary-card-value" id="cardOverdue">0</div>
+    <div class="summary-card-sub" id="cardOverdueSub">Past committed date</div>
+  </article>
+  <article class="summary-card compliance">
+    <h4 class="summary-card-title">Project Updates</h4>
+    <div class="summary-card-value" id="cardUpdateCompliance">0%</div>
+    <div class="summary-card-sub" id="cardUpdateComplianceSub">0/0 updated this month</div>
+  </article>
+</section>
+
+<section class="charts">
+  <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
+  <div class="chart-wrap"><canvas id="categoryChart"></canvas></div>
+  <div class="chart-wrap"><canvas id="portfolioMetricsChart"></canvas></div>
+  <div class="chart-wrap"><canvas id="deadlineProximityChart"></canvas></div>
+</section>
+
+<section class="pager pager-top">
+  <div class="pager-top-main">
+    <span class="pager-showing"></span>
+    <div class="pager-pages" id="pagerPagesTop"></div>
+  </div>
+  <div class="pager-top-side">
+    <div class="column-chooser-wrap">
+      <button id="columnChooserBtn" type="button" class="column-chooser-btn" aria-haspopup="true" aria-expanded="false">
+        <span class="column-chooser-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="2"/>
+            <rect x="14" y="4" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="2"/>
+            <rect x="4" y="14" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="2"/>
+            <rect x="14" y="14" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </span>
+        <span class="column-chooser-label">Choose Columns to Show</span>
+        <span id="columnChooserCount" class="column-chooser-count">6</span>
+        <span class="column-chooser-caret" aria-hidden="true">&#709;</span>
+      </button>
+      <div id="columnChooserMenu" class="column-chooser-menu hidden"></div>
+    </div>
+  </div>
+</section>
+
+<div class="top-scroll-wrapper">
+  <div class="top-scroll-content"></div>
+</div>
+
+<section id="dashboard"></section>
+
+<section class="pager pager-bottom">
+  <span class="pager-showing"></span>
+  <div class="pager-pages" id="pagerPagesBottom"></div>
+</section>
+
+<div id="statusModal" class="modal hidden">
+  <div class="modal-content edit-modal-content">
+    <div class="edit-modal-header">
+      <h3>Update Project</h3>
+      <button type="button" id="mClose" class="modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="wizard-progress wizard-progress-compact">
+      <div class="wizard-step is-active" id="mWizardStep1" data-step="1"><span>1</span><em>Project Identity</em></div>
+      <div class="wizard-step" id="mWizardStep2" data-step="2"><span>2</span><em>Ownership & Team</em></div>
+      <div class="wizard-step" id="mWizardStep3" data-step="3"><span>3</span><em>Classification & Timeline</em></div>
+    </div>
+    <div class="wizard-panel is-active" id="mPanel1">
+      <h3 class="wizard-panel-heading">
+        <span class="wizard-panel-heading-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 3v5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span>Project Identity</span>
+      </h3>
+      <div class="edit-modal-grid">
+        <label><span class="field-label">Initiative Name <span class="req">*</span></span><input id="mInitiativeInput" list="mInitiativeSuggestions" autocomplete="off" /><datalist id="mInitiativeSuggestions"></datalist></label>
+        <label><span class="field-label">Project Name <span class="req">*</span></span><input id="mProjectInput" list="mProjectNameSuggestions" autocomplete="off" /><datalist id="mProjectNameSuggestions"></datalist></label>
+        <label class="span2"><span class="field-label">Description</span><textarea id="mDescription" rows="3"></textarea></label>
+      </div>
+      <div class="wizard-actions-row">
+        <button id="mCancel1" class="wizard-btn wizard-btn-secondary" type="button">Cancel</button>
+        <button id="mNext1" class="wizard-btn wizard-btn-primary" type="button">Next</button>
+      </div>
+    </div>
+    <div class="wizard-panel" id="mPanel2">
+      <h3 class="wizard-panel-heading">
+        <span class="wizard-panel-heading-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8" cy="9" r="3" stroke="currentColor" stroke-width="1.8"/>
+            <circle cx="17" cy="8" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M3 20c0-3 2.4-5 5-5s5 2 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M14 19c.2-2 1.7-3.5 3.8-3.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span>Ownership &amp; Team</span>
+      </h3>
+      <div class="edit-modal-grid">
+        <label><span class="field-label">DT Team Accountable <span class="req">*</span></span>
+          <select id="mDTTeam">
+            <option value="">— Select —</option>
+            <option>Data &amp; AI</option>
+            <option>Enterprise Applications</option>
+            <option>Technology Enablement &amp; Transformation</option>
+            <option>Product Tech Solutions &amp; Operations</option>
+          </select>
+        </label>
+        <label><span class="field-label">DT Lead</span><input id="mDTLead" /></label>
+        <label><span class="field-label">Executive Sponsor</span><input id="mExecSponsor" /></label>
+        <label><span class="field-label">Business Project Lead</span><input id="mBizLead" /></label>
+        <label class="span2"><span class="field-label">DT Teams Involved <span class="field-hint">- multi-select</span></span>
+          <div class="multi-picklist" id="mEditDTTeamsPicklist" data-placeholder="Click to add more teams...">
+            <input type="hidden" id="mEditDTTeamsInvolvedValue" value="" />
+            <div class="multi-picklist-control">
+              <div class="multi-picklist-chips" id="mEditDTTeamsChips">
+                <span class="multi-picklist-empty">Click to add more teams...</span>
+              </div>
+              <input type="text" class="multi-picklist-input" id="mEditDTTeamsSearch" placeholder="Click to add more teams..." autocomplete="off" />
+              <button type="button" class="multi-picklist-toggle" id="mEditDTTeamsToggle" aria-label="Open team list">▾</button>
+            </div>
+            <div class="multi-picklist-menu" id="mEditDTTeamsMenu">
+              {% for option in lovs.get('dt_team_accountable', []) %}
+              <button type="button" data-value="{{ option }}">{{ option }}</button>
+              {% endfor %}
+            </div>
+          </div>
+        </label>
+      </div>
+      <div class="wizard-actions-row">
+        <button id="mCancel2" class="wizard-btn wizard-btn-secondary" type="button">Cancel</button>
+        <button id="mBack2" class="wizard-btn wizard-btn-secondary" type="button">Back</button>
+        <button id="mNext2" class="wizard-btn wizard-btn-primary" type="button">Next</button>
+      </div>
+    </div>
+    <div class="wizard-panel" id="mPanel3">
+      <div class="edit-modal-grid">
+        <label><span class="field-label">State <span class="req">*</span></span>
+          <select id="mState">
+            <option value="Funnel">Funnel</option>
+            <option value="Evaluation">Evaluation</option>
+            <option value="Hold">Hold</option>
+            <option value="Active">Active</option>
+            <option value="Closure">Closure</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </label>
+        <label><span class="field-label">OTD Status</span>
+          <select id="mOTD">
+            <option value="">—</option>
+            <option value="On Track">On Track</option>
+            <option value="Adjusted plan">Adjusted plan</option>
+            <option value="Slip">Slip</option>
+          </select>
+        </label>
+        <label><span class="field-label">Project Status</span>
+          <select id="mProjectStatus">
+            <option value="NA">NA</option>
+            <option value="G">G — Green</option>
+            <option value="R">R — Red</option>
+            <option value="Y">Y — Yellow</option>
+            <option value="Hold">Hold — Grey</option>
+          </select>
+        </label>
+        <label><span class="field-label">Phase</span>
+          <select id="mPhase">
+            <option value="Agile">Agile</option>
+            <option value="Discovery">Discovery</option>
+            <option value="Build">Build</option>
+            <option value="Funnel">Funnel</option>
+            <option value="Launch">Launch</option>
+            <option value="Requirements">Requirements</option>
+            <option value="Verify">Verify</option>
+            <option value="Post-Launch">Post-Launch</option>
+          </select>
+        </label>
+        <label><span class="field-label">End Date <span id="mEstdMandatoryHint" class="field-hint hidden">- mandatory for On Track / Off Track</span></span><input id="mEstdEndDate" type="date" /></label>
+        <label id="mAdjustedWrap"><span class="field-label">Adjusted End Date <span class="field-hint">- mandatory for Adjusted Plan</span></span><input id="mAdjusted" type="date" /></label>
+        <label><span class="field-label">Category</span>
+          <select id="mCategory">
+            <option value="">— Select —</option>
+            <option value="MustDo">MustDo</option>
+            <option value="Strategic/LTGrowth">Strategic/LTGrowth</option>
+            <option value="Productivity">Productivity</option>
+          </select>
+        </label>
+        <label><span class="field-label">Business Unit</span>
+          <select id="mBusinessUnit">
+            <option value="">— Select —</option>
+            <option>All</option>
+            <option>Grid</option>
+            <option>Mfg</option>
+            <option>PERS</option>
+          </select>
+        </label>
+        <label><span class="field-label">Primary Function</span>
+          <select id="mPrimaryFunction">
+            <option value="">— Select —</option>
+            <option>All</option>
+            <option>Comm&amp;Mktg</option>
+            <option>Commercial</option>
+            <option>Customer Success</option>
+            <option>Engineering</option>
+            <option>Finance</option>
+            <option>Marketing</option>
+            <option>M&amp;A</option>
+            <option>DT</option>
+          </select>
+        </label>
+        <label><span class="field-label">Region</span>
+          <select id="mRegion">
+            <option value="">— Select —</option>
+            <option>Global</option>
+            <option>EMEA</option>
+          </select>
+        </label>
+        <label><span class="field-label">Level of Effort</span>
+          <select id="mLOE">
+            <option value="">— Select —</option>
+            <option value="Small">Small</option>
+            <option value="Medium">Medium</option>
+            <option value="Large">Large</option>
+            <option value="XLarge">XLarge</option>
+            <option value="Extra Large">Extra Large</option>
+            <option value="TBD">TBD</option>
+          </select>
+        </label>
+        <label><span class="field-label">Technology</span><input id="mTechnology" /></label>
+        <label><span class="field-label">Budget</span><input id="mBudget" type="number" min="0" /></label>
+        <div id="mBudgetBenefitsFields" style="display: contents;"></div>
+        <label class="span2"><span class="field-label">Comments</span><textarea id="mComments" rows="2" placeholder="Status update comments..."></textarea></label>
+      </div>
+      <div class="actions">
+        <span id="mError" class="error hidden modal-error" style="font-size:13px;"></span>
+      </div>
+      <div class="wizard-actions-row">
+        <button id="mCancel" class="wizard-btn wizard-btn-secondary" type="button">Cancel</button>
+        <button id="mBack3" class="wizard-btn wizard-btn-secondary" type="button">Back</button>
+        <button id="mSave" class="wizard-btn wizard-btn-submit" type="button">Update Project</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="projectViewModal" class="modal hidden">
+  <div class="modal-content project-view-modal-content">
+    <div class="audit-modal-header">
+      <h3>View Project Details</h3>
+      <button type="button" id="projectViewCloseX" class="audit-modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div id="projectViewMeta" class="project-view-meta"></div>
+    <div id="projectViewDetails" class="project-view-grid"></div>
+    <div class="audit-modal-footer">
+      <button id="projectViewClose" class="audit-close-btn" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="auditModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="audit-modal-header">
+      <h3>Audit Trail</h3>
+      <button type="button" id="auditCloseX" class="audit-modal-close" aria-label="Close">&times;</button>
+    </div>
+    <select id="auditSort"><option value="desc">Newest First</option><option value="asc">Oldest First</option></select>
+    <ul id="auditList"></ul>
+    <div class="audit-modal-footer">
+      <button id="auditClose" class="audit-close-btn">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="importResultModal" class="modal hidden">
+  <div class="modal-content import-result-content">
+    <div class="audit-modal-header">
+      <h3>Import Summary</h3>
+      <button type="button" id="importResultCloseX" class="audit-modal-close" aria-label="Close">&times;</button>
+    </div>
+    <p id="importSummaryText" class="import-summary-text"></p>
+    <div id="importFailuresWrap" class="import-failures-wrap hidden">
+      <h4>Failed Rows</h4>
+      <div class="table-scroll">
+        <table class="import-failures-table">
+          <thead>
+            <tr>
+              <th>Row</th>
+              <th>Project Name</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody id="importFailuresBody"></tbody>
+        </table>
+      </div>
+      <div class="import-failed-actions">
+        <button id="downloadFailedRows" type="button">Download Failed</button>
+      </div>
+    </div>
+    <div class="audit-modal-footer">
+      <button id="importResultClose" class="audit-close-btn">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="addProjectModal" class="modal hidden">
+  <div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto;">
+    <div class="wizard-shell" style="margin:0;border:none;border-radius:0;">
+      <div class="wizard-header" style="padding:16px 20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h2 style="margin:0;">Add Project</h2>
+          <button type="button" id="addProjCloseX" class="audit-modal-close" aria-label="Close">&times;</button>
+        </div>
+      </div>
+      <div class="wizard-progress">
+        <div class="wizard-step is-active apModal-step" data-step="1"><span>1</span><em>Project Identity</em></div>
+        <div class="wizard-step apModal-step" data-step="2"><span>2</span><em>Ownership & Team</em></div>
+        <div class="wizard-step apModal-step" data-step="3"><span>3</span><em>Classification & Timeline</em></div>
+      </div>
+      <form id="apModalForm" class="wizard-form">
+        <section class="wizard-panel is-active apModal-panel" data-panel="1">
+          <h3 class="wizard-panel-heading">
+            <span class="wizard-panel-heading-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M14 3v5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span>Project Identity</span>
+          </h3>
+          <div class="grid1">
+            <label><span class="field-label">Project Status <span class="req">*</span></span>
+              <select name="project_status" required>
+                <option value="">— Select —</option>
+                <option value="G">G</option>
+                <option value="R">R</option>
+                <option value="Y">Y</option>
+                <option value="NA" selected>NA</option>
+                <option value="Hold">Hold</option>
+              </select>
+            </label>
+            <label><span class="field-label">Initiative Name <span class="req">*</span></span>
+              <input name="initiative_name" list="apModalInitiativeSuggestions" placeholder="Type to search or select initiative..." required autocomplete="off" />
+              <datalist id="apModalInitiativeSuggestions"></datalist>
+              <small id="apModalInitMsg" class="inline-help">&nbsp;</small>
+            </label>
+            <label><span class="field-label">Project Name <span class="req">*</span></span>
+              <input name="project_name" list="apModalProjectNameSuggestions" placeholder="Enter unique project name" required autocomplete="off" />
+              <datalist id="apModalProjectNameSuggestions"></datalist>
+              <small id="apModalProjMsg" class="inline-help">&nbsp;</small>
+            </label>
+            <div id="apModalProjectDupAlert" class="ap-dup-alert hidden" aria-live="polite">
+              <div class="ap-dup-alert-title">
+                <span class="ap-dup-alert-icon" aria-hidden="true">&#9888;</span>
+                <span>Similar project already exists in the portfolio</span>
+              </div>
+              <div class="ap-dup-alert-card">
+                <div class="ap-dup-alert-card-main">
+                  <strong id="apModalProjectDupName"></strong>
+                  <small id="apModalProjectDupMeta"></small>
+                </div>
+                <span id="apModalProjectDupBadge" class="ap-dup-alert-badge"></span>
+              </div>
+              <div class="ap-dup-alert-actions">
+                <button type="button" id="apModalDupContinue" class="wizard-btn wizard-btn-secondary">Continue with new name</button>
+                <button type="button" id="apModalDupUseExisting" class="wizard-btn wizard-btn-primary">Use existing project</button>
+              </div>
+            </div>
+            <label><span class="field-label">Description <span class="req">*</span></span>
+              <textarea name="description" placeholder="Provide a clear, concise description of the project scope and objectives..." required rows="3"></textarea>
+              <div class="char-counter"><span id="apModalCharCount">0</span> / 500 characters</div>
+            </label>
+          </div>
+          <div class="wizard-actions-row">
+            <span class="wizard-footer-text">Fields marked <span class="req">*</span> are required</span>
+            <div>
+              <button type="button" id="apModalCancel1" class="wizard-btn wizard-btn-secondary">Cancel</button>
+              <button type="button" id="apModalNext1" class="wizard-btn wizard-btn-primary">Next</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="wizard-panel apModal-panel" data-panel="2">
+          <h3 class="wizard-panel-heading">
+            <span class="wizard-panel-heading-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="8" cy="9" r="3" stroke="currentColor" stroke-width="1.8"/>
+                <circle cx="17" cy="8" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M3 20c0-3 2.4-5 5-5s5 2 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M14 19c.2-2 1.7-3.5 3.8-3.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span>Ownership &amp; Team</span>
+          </h3>
+          <div class="grid2">
+            <label><span class="field-label">DT Team Accountable <span class="req">*</span></span>
+              <select name="dt_team_accountable" required>
+                <option value="">— Select —</option>
+                {% for option in lovs.get('dt_team_accountable', []) %}
+                <option value="{{ option }}">{{ option }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label><span class="field-label">DT Lead <span class="req">*</span> <span class="field-hint">- must be email</span></span>
+              <input type="email" name="dt_lead" placeholder="taufan.tjioe@gevernova.com" required />
+              <small class="inline-help email-help">Must be a Valid @gevernova.com address</small>
+            </label>
+            <label><span class="field-label">Executive Sponsor <span class="req">*</span> <span class="field-hint">- must be email</span></span>
+              <input type="email" name="executive_sponsor" placeholder="sponsor@gevernova.com" required />
+              <small class="inline-help email-help">Must be a Valid @gevernova.com address</small>
+            </label>
+            <label><span class="field-label">Business Project Lead <span class="req">*</span> <span class="field-hint">- must be email</span></span>
+              <input type="email" name="business_project_lead" placeholder="biz.lead@gevernova.com" required />
+              <small class="inline-help email-help">Must be a Valid @gevernova.com address</small>
+            </label>
+            <label class="span2"><span class="field-label">DT Teams Involved <span class="field-hint">- multi-select</span></span>
+              <div class="multi-picklist" id="mDTTeamsPicklist" data-placeholder="Click to add more teams...">
+                <input type="hidden" name="dt_teams_involved" id="mDTTeamsInvolvedValue" value="" />
+                <div class="multi-picklist-control">
+                  <div class="multi-picklist-chips" id="mDTTeamsChips">
+                    <span class="multi-picklist-empty">Click to add more teams...</span>
+                  </div>
+                  <input type="text" class="multi-picklist-input" id="mDTTeamsSearch" placeholder="Click to add more teams..." autocomplete="off" />
+                  <button type="button" class="multi-picklist-toggle" id="mDTTeamsToggle" aria-label="Open team list">▾</button>
+                </div>
+                <div class="multi-picklist-menu" id="mDTTeamsMenu">
+                  {% for option in lovs.get('dt_team_accountable', []) %}
+                  <button type="button" data-value="{{ option }}">{{ option }}</button>
+                  {% endfor %}
+                </div>
+              </div>
+              <small class="inline-help email-help">Select one or more teams from the same LOV as DT Team Accountable.</small>
+            </label>
+          </div>
+          <div class="wizard-actions-row">
+            <span class="wizard-footer-text">Fields marked <span class="req">*</span> are required</span>
+            <div>
+              <button type="button" id="apModalCancel2" class="wizard-btn wizard-btn-secondary">Cancel</button>
+              <button type="button" id="apModalBack2" class="wizard-btn wizard-btn-secondary">Back</button>
+              <button type="button" id="apModalNext2" class="wizard-btn wizard-btn-primary">Next</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="wizard-panel apModal-panel" data-panel="3">
+          <div class="wizard-section">
+            <h3 class="wizard-section-title">Status &amp; Effort</h3>
+            <div class="grid3">
+              <label><span class="field-label">State <span class="req">*</span></span>
+                <select name="state" required>
+                  <option value="">— Select —</option>
+                  <option value="Funnel">Funnel</option>
+                  <option value="Evaluation" selected>Evaluation</option>
+                  <option value="Hold">Hold</option>
+                  <option value="Active">Active</option>
+                  <option value="Closure">Closure</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+                <small class="section-note">Only Active available for new projects</small>
+              </label>
+              <label><span class="field-label">OTD Status <span class="req">*</span></span>
+                <select name="project_otd_status">
+                  <option value="">— Select —</option>
+                  <option value="On Track">On Track</option>
+                  <option value="Adjusted plan">Adjusted plan</option>
+                  <option value="Slip">Off Track</option>
+                </select>
+              </label>
+              <label><span class="field-label">Level of Effort <span class="field-hint">- up to XXL</span></span>
+                <select name="level_of_effort">
+                  <option value="">— Select —</option>
+                  <option value="Small">S — Small</option>
+                  <option value="Medium">M — Medium</option>
+                  <option value="Large">L — Large</option>
+                  <option value="XLarge">XL — XLarge</option>
+                  <option value="XXL">XXL</option>
+                  <option value="TBD">TBD</option>
+                </select>
+              </label>
+              <div id="apModalOtdWarning" class="wizard-warning hidden">Off Track: ensure DT Lead has a recovery plan before submitting.</div>
+            </div>
+          </div>
+
+          <div class="wizard-section">
+            <h3 class="wizard-section-title">Classification</h3>
+            <div class="grid3">
+              <label><span class="field-label">Phase <span class="req">*</span></span>
+                <select name="project_otd_phase" required>
+                  <option value="">— Select —</option>
+                  <option value="Discovery" selected>Discovery</option>
+                  <option value="Agile">Agile</option>
+                  <option value="Build">Build</option>
+                  <option value="Funnel">Funnel</option>
+                  <option value="Launch">Launch</option>
+                  <option value="Requirements">Requirements</option>
+                  <option value="Verify">Verify</option>
+                  <option value="Post-Launch">Post-Launch</option>
+                </select>
+              </label>
+              <label><span class="field-label">Category</span>
+                <select name="category">
+                  <option value="">— Select —</option>
+                  <option value="MustDo">MustDo</option>
+                  <option value="Strategic/LTGrowth">Strategic/LTGrowth</option>
+                  <option value="Productivity">Productivity</option>
+                </select>
+              </label>
+              <label><span class="field-label">Business Unit</span>
+                <select name="business_unit">
+                  <option value="">— Select —</option>
+                  <option value="All">ALL</option>
+                  <option value="Grid">GRID</option>
+                  <option value="Mfg">MFG</option>
+                  <option value="PERS">PERS</option>
+                  <option value="Electrification">ELECTRIFICATION</option>
+                </select>
+              </label>
+              <label><span class="field-label">Primary Function</span>
+                <select name="primary_function">
+                  <option value="">— Select —</option>
+                  <option>All</option>
+                  <option>Commercial</option>
+                  <option>Customer Success</option>
+                  <option>Engineering</option>
+                  <option>Finance</option>
+                  <option>Marketing</option>
+                  <option>M&amp;A</option>
+                  <option>DT</option>
+                </select>
+              </label>
+              <label><span class="field-label">Region</span>
+                <select name="region">
+                  <option value="">— Select —</option>
+                  <option>Global</option>
+                  <option>EMEA</option>
+                  <option>North America</option>
+                  <option>Asia Pacific</option>
+                </select>
+              </label>
+              <label><span class="field-label">Technology / Tools</span><input name="technology" placeholder="Azure, React, Salesforce..." /></label>
+            </div>
+          </div>
+
+          <div class="wizard-section">
+            <h3 class="wizard-section-title">Timeline &amp; Budget</h3>
+            <div class="grid3">
+              <label><span class="field-label">Actual End Date <span id="apModalEstdMandatoryHint" class="field-hint hidden">- mandatory for On Track / Off Track</span></span><input type="date" name="estd_end_date" /></label>
+              <label id="apModalAdjWrap"><span class="field-label">Adjusted End Date <span class="field-hint">- mandatory for Adjusted Plan</span></span><input type="date" name="adjusted_end_date" /></label>
+              <label><span class="field-label">Budget Amount</span><input type="number" name="budget" placeholder="Enter budget amount" min="0" /></label>
+              <div id="apModalBudgetBenefitsFields" class="span3"></div>
+            </div>
+          </div>
+          <div class="wizard-actions-row">
+            <span class="wizard-footer-text">Fields marked <span class="req">*</span> are required</span>
+            <div>
+              <button type="button" id="apModalCancel3" class="wizard-btn wizard-btn-secondary">Cancel</button>
+              <button type="button" id="apModalBack3" class="wizard-btn wizard-btn-secondary">Back</button>
+              <button type="submit" class="wizard-btn wizard-btn-submit"><span class="segmented-icon">✓</span> Create Project</button>
+            </div>
+          </div>
+        </section>
+        <p id="apModalResult"></p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="projectCreateSuccessModal" class="modal hidden">
+  <div class="modal-content success-modal-content">
+    <div class="success-shell">
+      <div class="success-header">
+        <h3>Add Project</h3>
+        <button type="button" id="projectSuccessCloseX" class="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="success-progress">
+        <div class="success-progress-step"><span>✓</span><em>Project Identity</em></div>
+        <div class="success-progress-step"><span>✓</span><em>Ownership &amp; Team</em></div>
+        <div class="success-progress-step"><span>✓</span><em>Classification &amp; Timeline</em></div>
+      </div>
+      <div class="success-body">
+        <div class="success-check">✓</div>
+        <h3 class="success-title">Project Created Successfully</h3>
+        <p class="success-text">Your project has been added to the Grid SW Portfolio. The DT Lead will receive automated status reminders on the 3rd Friday of each month.</p>
+        <div id="projectSuccessId" class="success-project-id"></div>
+        <div class="success-actions">
+          <button type="button" id="projectSuccessAddAnother" class="wizard-btn success-secondary">Add Another Project</button>
+          <button type="button" id="projectSuccessBackToDashboard" class="wizard-btn success-primary">Back to Dashboard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="projectUpdateSuccessModal" class="modal hidden">
+  <div class="modal-content success-modal-content">
+    <div class="success-shell">
+      <div class="success-header">
+        <h3>Update Project</h3>
+        <button type="button" id="projectUpdateSuccessCloseX" class="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="success-progress">
+        <div class="success-progress-step"><span>✓</span><em>Project Identity</em></div>
+        <div class="success-progress-step"><span>✓</span><em>Ownership &amp; Team</em></div>
+        <div class="success-progress-step"><span>✓</span><em>Classification &amp; Timeline</em></div>
+      </div>
+      <div class="success-body">
+        <div class="success-check">✓</div>
+        <h3 class="success-title">Project Updated Successfully</h3>
+        <p class="success-text">Your project has been updated in the Grid SW Portfolio. The DT Lead will receive automated status reminders on the 3rd Friday of each month.</p>
+        <div id="projectUpdateSuccessId" class="success-project-id"></div>
+        <div class="success-actions">
+          <button type="button" id="projectUpdateSuccessBackToDashboard" class="wizard-btn success-primary">Back to Dashboard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  window.CURRENT_YEAR={{ current_year|int }};
+  window.NEXT_YEAR={{ next_year|int }};
+</script>
+<script>window.IS_ADMIN={{ 'true' if role == 'Admin' else 'false' }};</script>
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}

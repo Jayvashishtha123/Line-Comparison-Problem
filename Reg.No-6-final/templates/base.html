@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Grid SW Project Portfolio</title>
+  <link rel="icon" type="image/png" href="/static/images/GEV.png" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="/static/images/GE_LOGO.png" alt="GE Vernova" class="brand-logo" />
+      <span>Grid SW Project Portfolio</span>
+    </div>
+    <nav>
+      <a href="/dashboard">Dashboard</a>
+      {% if request.path.startswith('/dashboard') %}
+      <button id="importExcel" type="button" class="topbar-action-btn" aria-label="Import projects">
+        <span class="import-btn-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M8 7l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="import-btn-label">Import</span>
+      </button>
+      {% endif %}
+      <button id="addProjectBtn" type="button" class="topbar-action-btn topbar-add-project-btn" aria-label="Add project">
+        <span class="add-project-icon" aria-hidden="true">+</span>
+        <span class="add-project-label">Add Project</span>
+      </button>
+      {% if not auth_user %}
+      <a href="/login" class="btn-admin-login">&#128272; Admin Login</a>
+      {% endif %}
+      {% if auth_user %}
+      <a href="/logout">Logout ({{ auth_user }})</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+  {% block scripts %}{% endblock %}
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const navLinks = document.querySelectorAll('.topbar nav a');
+      const currentPath = window.location.pathname;
+      navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href && currentPath.startsWith(href)) {
+          link.classList.add('nav-active');
+        } else {
+          link.classList.remove('nav-active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

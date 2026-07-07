@@ -1,0 +1,107 @@
+{
+  "audit_trail_configuration": {
+    "enabled": true,
+    "global_settings": {
+      "track_all_fields": true,
+      "track_system_generated": true,
+      "system_user_label": "System",
+      "timestamp_format": "ISO 8601"
+    },
+    "dashboard_display": {
+      "audit_trail_column": "Audit Trail",
+      "display_count": 1,
+      "show_view_all_button_at": 2,
+      "entry_format": "{field_name} changed from '{old_value}' to '{new_value}' by {user} on {timestamp}",
+      "entry_order": "latest_first"
+    },
+    "modal_view": {
+      "enabled": true,
+      "modal_title": "Audit Trail - {project_name}",
+      "modal_trigger": "View All button",
+      "display_order": "latest_first",
+      "allow_user_sort_toggle": true,
+      "supported_sort_orders": [
+        "latest_first",
+        "oldest_first"
+      ],
+      "columns": [
+        "field_name",
+        "old_value",
+        "new_value",
+        "user",
+        "timestamp"
+      ],
+      "sortable": true,
+      "filterable": true
+    }
+  },
+  "audit_log_entry_schema": {
+    "audit_id": "string - unique identifier for log entry",
+    "project_id": "string - project record being modified",
+    "field_name": "string - field that was changed",
+    "old_value": "any - value before change",
+    "new_value": "any - value after change",
+    "change_type": "enum - 'create' | 'update' | 'delete' | 'system'",
+    "user_id": "string - user who made change (email or user ID)",
+    "user_name": "string - display name of user",
+    "timestamp": "ISO 8601 datetime - when change occurred",
+    "ip_address": "string - optional IP of requester",
+    "change_reason": "string - optional reason for change"
+  },
+  "audit_tracking_rules": {
+    "retention": {
+      "policy": "permanent",
+      "purge_enabled": false
+    },
+    "project_creation": {
+      "tracked": true,
+      "change_type": "create",
+      "log_all_fields": true,
+      "user": "current_user",
+      "timestamp": "creation_timestamp",
+      "note": "Initial entry when project is first created"
+    },
+    "project_field_update": {
+      "tracked": true,
+      "change_type": "update",
+      "log_field": "field_name",
+      "log_before_after": true,
+      "user": "current_user",
+      "timestamp": "update_timestamp",
+      "note": "Any field change creates audit log entry"
+    },
+    "status_update_via_button": {
+      "tracked": true,
+      "change_type": "update",
+      "field_name": "project_status",
+      "method": "hover_button_modal",
+      "requires_audit_log": true,
+      "note": "Update button on Project Status column logs status change"
+    },
+    "system_generated_changes": {
+      "tracked": true,
+      "change_type": "system",
+      "user": "System",
+      "fields": [
+        "project_otd_status",
+        "adjusted_end_date",
+        "filter_key"
+      ],
+      "note": "System-generated field updates logged with 'System' as user"
+    },
+    "project_deletion": {
+      "tracked": true,
+      "change_type": "delete",
+      "log_all_fields": true,
+      "user": "current_user",
+      "timestamp": "deletion_timestamp",
+      "note": "Project deletion is final and logged"
+    }
+  },
+  "query_examples": {
+    "get_audit_trail_by_project": "SELECT * FROM audit_log WHERE project_id = ? ORDER BY timestamp DESC",
+    "get_recent_entries": "SELECT * FROM audit_log WHERE project_id = ? ORDER BY timestamp DESC LIMIT 2",
+    "get_field_change_history": "SELECT * FROM audit_log WHERE project_id = ? AND field_name = ? ORDER BY timestamp ASC",
+    "get_user_changes": "SELECT * FROM audit_log WHERE user_id = ? ORDER BY timestamp DESC"
+  }
+}
